@@ -1,54 +1,29 @@
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import Dashboard from "./components/Dashboard";
+import LoadingScreen from "./components/LoadingScreen";
 
 function App() {
-  const [resumeId, setResumeId] = useState("");
-  const [jobId, setJobId] = useState("");
-  const [score, setScore] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [online, setOnline] = useState(navigator.onLine);
 
-  const calculateScore = async () => {
-    try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/calculate/${resumeId}/${jobId}`
-      );
-      setScore(response.data.score);
-    } catch (error) {
-      console.error(error);
-      alert("Error calculating score");
-    }
-  };
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1500);
 
-  return (
-    <div style={{ padding: "40px", fontFamily: "Arial" }}>
-      <h1>AI Recruitment Dashboard</h1>
+    window.addEventListener("offline", () => setOnline(false));
+    window.addEventListener("online", () => setOnline(true));
+  }, []);
 
-      <input
-        type="number"
-        placeholder="Resume ID"
-        value={resumeId}
-        onChange={(e) => setResumeId(e.target.value)}
-      />
+  if (!online) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black text-red-500 text-2xl">
+        Internet Connection Required
+      </div>
+    );
+  }
 
-      <br /><br />
+  if (loading) return <LoadingScreen />;
 
-      <input
-        type="number"
-        placeholder="Job ID"
-        value={jobId}
-        onChange={(e) => setJobId(e.target.value)}
-      />
-
-      <br /><br />
-
-      <button onClick={calculateScore}>
-        Calculate AI Score
-      </button>
-
-      {score !== null && (
-        <h2>Match Score: {score.toFixed(2)}%</h2>
-      )}
-    </div>
-  );
+  return <Dashboard />;
 }
 
 export default App;
